@@ -368,11 +368,13 @@
           <text x="460" y="170"  text-anchor="middle" font-size="60" fill="#343a45" font-family="DM Sans,sans-serif">FRONT</text>
           <text x="460" y="1680" text-anchor="middle" font-size="60" fill="#343a45" font-family="DM Sans,sans-serif">REAR</text>
 
-          <!-- CoG vertical dashed line (slides left/right) -->
+          <!-- CoG guides: vertical line shows lateral CoG position; horizontal line makes it easier to see on tall/narrow mobile layouts -->
           <line id="side-cog-vline" x1="460" y1="232" x2="460" y2="1439"
-                stroke="#3b82f6" stroke-width="5" stroke-dasharray="16,10" opacity="0"/>
+                stroke="#3b82f6" stroke-width="9" stroke-dasharray="20,14" stroke-linecap="round" opacity="0"/>
+          <line id="side-cog-hline" x1="227" y1="836" x2="714" y2="836"
+                stroke="#3b82f6" stroke-width="6" stroke-dasharray="18,12" stroke-linecap="round" opacity="0"/>
           <!-- CoG dot at fore-aft center -->
-          <circle id="side-cog-dot" cx="460" cy="836" r="26" fill="#3b82f6" opacity="0"/>
+          <circle id="side-cog-dot" cx="460" cy="836" r="34" fill="#3b82f6" stroke="#0e0f11" stroke-width="8" opacity="0"/>
         </svg>
         <div class="diagram-footer">
           <span class="d-val" id="side-val">—</span>
@@ -449,6 +451,11 @@
   function resetFill(id) {
     el(id).setAttribute('y', GND);
     el(id).setAttribute('height', '0');
+  }
+  function resetSideFill() {
+    const sf = el('side-fill');
+    sf.setAttribute('x', S_BODY_LEFT);
+    sf.setAttribute('width', '0');
   }
   function showLine(id, x1, y1, x2, y2, color) {
     const l = el(id);
@@ -572,19 +579,23 @@
     }
 
     // ── SIDE BALANCE ──────────────────────────────────────────
-    if (!isNaN(total) && !isNaN(track) && !isNaN(leftW) && !isNaN(rightW) && total > 0 && track > 0) {
-      // x = distance from LEFT wheel centerline to CoG.
-      // Moment balance means left-side scale weight creates moment about the right wheel,
-      // so distance from the left is based on RIGHT-side weight.
+    // Side CoG uses standard two-scale moment balance.
+    // x = distance from LEFT wheel centerline to CoG.
+    // Because the right-side scale reading is the reaction opposite the left pivot,
+    // x is based on RIGHT-side weight, not left-side weight.
+    if (!isNaN(total) && !isNaN(track) && total > 0 && track > 0 && !isNaN(leftW) && !isNaN(rightW)) {
       const x        = track * (rightW / total);
       const leftPct  = Math.round(leftW  / total * 100);
-      const rightPct = 100 - leftPct;
+      const rightPct = Math.round(rightW / total * 100);
 
-      // CoG x in SVG: interpolate between left and right wheel center columns
-      const cogX = S_LEFT_CX + (x / track) * S_TRACK_PX;
+      // CoG x in SVG: interpolate between left and right wheel center columns.
+      // Clamp visually so bad/noisy inputs cannot throw the dot outside the drawing.
+      const xFrac = Math.min(Math.max(x / track, 0), 1);
+      const cogX  = S_LEFT_CX + xFrac * S_TRACK_PX;
 
-      // Fill grows horizontally from body left edge to cogX (left-heavy = wider fill)
-      const fillW = Math.max(0, cogX - S_BODY_LEFT);
+      // Fill grows horizontally from body left edge to cogX. Clamp to the body span.
+      const bodyRight = 673;
+      const fillW = Math.min(Math.max(cogX - S_BODY_LEFT, 0), bodyRight - S_BODY_LEFT);
 
       const diff = Math.abs(leftPct - 50);
       let fillColor, dotColor, noteClass, noteText;
@@ -600,23 +611,23 @@
         analysis.push({ dot: 'dot-amber', text: 'Side imbalance of ' + diff + '% — consider shifting battery or servo laterally.' });
       }
 
-      // Horizontal fill from left edge of body to cogX
       const sf = el('side-fill');
       sf.setAttribute('x',     S_BODY_LEFT);
       sf.setAttribute('width', fillW.toFixed(1));
       sf.setAttribute('fill',  fillColor);
 
-      // CoG horizontal line spans left→right wheel columns at CoG y
+      // Show a bold crosshair so the lateral CoG is visible even when it lands near the center reference line.
       showLine('side-cog-vline', cogX, S_TOP_Y, cogX, S_BOTTOM_Y, dotColor);
+      showLine('side-cog-hline', S_LEFT_CX, S_COG_Y, S_RIGHT_CX, S_COG_Y, dotColor);
       showDot ('side-cog-dot', cogX, S_COG_Y, dotColor);
 
-      el('side-val').innerHTML    = x.toFixed(1) + '<span class="mu"> mm from left axle center</span>';
+      el('side-val').innerHTML    = x.toFixed(1) + '<span class="mu"> mm from left wheel centerline</span>';
       el('side-note').textContent = noteText;
       el('side-note').className   = noteClass;
 
     } else {
-      el('side-fill').setAttribute('width', '0');
-      hide('side-cog-dot'); hide('side-cog-vline');
+      resetSideFill();
+      hide('side-cog-dot'); hide('side-cog-vline'); hide('side-cog-hline');
       el('side-val').innerHTML    = '—';
       el('side-note').textContent = 'Enter weights to see balance';
       el('side-note').className   = 'd-note';
