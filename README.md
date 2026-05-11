@@ -1,0 +1,2 @@
+# calculator
+RC crawler center of gravity calculator. Enter scale weights and chassis dimensions to find longitudinal, altitudinal, and side CoG position. Built for use with a 30mm 3D-printed axle riser.
