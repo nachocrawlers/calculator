@@ -422,11 +422,13 @@
   const FRONT_CX = 611;
   const WB_PX    = FRONT_CX - REAR_CX;   // 414
 
-  const S_LEFT_CX  = 137;   // left wheel column center x in top-view SVG
-  const S_RIGHT_CX = 657;   // right wheel column center x
-  const S_TRACK_PX = S_RIGHT_CX - S_LEFT_CX; // 520
-  const S_BODY_LEFT = 160;  // left edge of body rect
-  const S_COG_Y    = 250;   // fore-aft midpoint y for CoG dot in top-view
+  const S_LEFT_CX  = 227;   // left wheel column center x in top-view SVG
+  const S_RIGHT_CX = 714;   // right wheel column center x
+  const S_TRACK_PX = S_RIGHT_CX - S_LEFT_CX; // 487
+  const S_BODY_LEFT = 248;  // left edge of body silhouette/fill origin
+  const S_COG_Y    = 836;   // fore-aft midpoint y for CoG dot in top-view
+  const S_TOP_Y    = 232;   // top of top-view body silhouette
+  const S_BOTTOM_Y = 1439;  // bottom of top-view body silhouette
 
   // Map real-world height h (mm) to SVG fill.
   // tireD*2 = full vehicle height budget → maps to (GND - TOP_Y) px span.
@@ -571,7 +573,10 @@
 
     // ── SIDE BALANCE ──────────────────────────────────────────
     if (!isNaN(total) && !isNaN(track) && !isNaN(leftW) && !isNaN(rightW) && total > 0 && track > 0) {
-      const x        = track * (leftW / total);   // dist from left wheel to CoG
+      // x = distance from LEFT wheel centerline to CoG.
+      // Moment balance means left-side scale weight creates moment about the right wheel,
+      // so distance from the left is based on RIGHT-side weight.
+      const x        = track * (rightW / total);
       const leftPct  = Math.round(leftW  / total * 100);
       const rightPct = 100 - leftPct;
 
@@ -602,7 +607,7 @@
       sf.setAttribute('fill',  fillColor);
 
       // CoG horizontal line spans left→right wheel columns at CoG y
-      showLine('side-cog-hline', S_LEFT_CX, S_COG_Y, S_RIGHT_CX, S_COG_Y, dotColor);
+      showLine('side-cog-vline', cogX, S_TOP_Y, cogX, S_BOTTOM_Y, dotColor);
       showDot ('side-cog-dot', cogX, S_COG_Y, dotColor);
 
       el('side-val').innerHTML    = x.toFixed(1) + '<span class="mu"> mm from left axle center</span>';
@@ -611,7 +616,7 @@
 
     } else {
       el('side-fill').setAttribute('width', '0');
-      hide('side-cog-dot'); hide('side-cog-hline');
+      hide('side-cog-dot'); hide('side-cog-vline');
       el('side-val').innerHTML    = '—';
       el('side-note').textContent = 'Enter weights to see balance';
       el('side-note').className   = 'd-note';
