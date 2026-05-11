@@ -3,493 +3,626 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RC Crawler CoG Calculator</title>
+  <title>Nacho Crawlers CoG Calculator</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-    /* ── Reset & base ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --surface-900: #0e0f11;
-      --surface-800: #16181c;
-      --surface-700: #1e2128;
-      --surface-600: #272b33;
-      --surface-500: #343a45;
-      --accent:      #3b82f6;
-      --accent-muted:#1d3a5f;
-      --slate-100:   #f1f5f9;
-      --slate-400:   #94a3b8;
-      --slate-500:   #64748b;
-      --slate-600:   #475569;
-      --green-400:   #4ade80;
-      --blue-400:    #60a5fa;
-      --amber-400:   #fbbf24;
+      --s900: #0e0f11; --s800: #16181c; --s700: #1e2128;
+      --s600: #272b33; --s500: #343a45;
+      --accent: #3b82f6; --accent-muted: #1d3a5f;
+      --sl100: #f1f5f9; --sl400: #94a3b8; --sl500: #64748b; --sl600: #475569;
+      --green: #4ade80; --blue: #60a5fa; --amber: #fbbf24;
+      --green-bg: #14291a; --blue-bg: #1d3a5f; --amber-bg: #2e200a;
     }
-
     html, body {
-      background: var(--surface-900);
-      color: var(--slate-100);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 16px;
-      line-height: 1.5;
-      min-height: 100vh;
+      background: var(--s900); color: var(--sl100);
+      font-family: 'DM Sans', sans-serif; font-size: 16px;
+      line-height: 1.5; min-height: 100vh;
     }
-
-    /* ── Header ── */
     header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px;
-      border-bottom: 1px solid var(--surface-600);
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px; border-bottom: 1px solid var(--s600);
     }
     .icon-wrap {
-      width: 32px; height: 32px;
-      border-radius: 8px;
-      background: var(--accent);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
+      width: 32px; height: 32px; border-radius: 8px; background: var(--accent);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
     .header-text h1 { font-size: 0.875rem; font-weight: 600; line-height: 1.2; }
-    .header-text p  { font-size: 0.75rem; color: var(--slate-500); line-height: 1.2; }
-
-    /* ── Main layout ── */
+    .header-text p  { font-size: 0.75rem; color: var(--sl500); line-height: 1.2; }
     main {
-      max-width: 48rem;
-      margin: 0 auto;
-      padding: 24px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      max-width: 52rem; margin: 0 auto;
+      padding: 24px 16px; display: flex; flex-direction: column; gap: 16px;
     }
-
-    /* ── Cards ── */
     .card {
-      background: var(--surface-800);
-      border: 1px solid var(--surface-600);
-      border-radius: 16px;
-      padding: 20px;
+      background: var(--s800); border: 1px solid var(--s600);
+      border-radius: 16px; padding: 20px;
     }
     .card-label {
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--slate-500);
-      margin-bottom: 16px;
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--sl500); margin-bottom: 16px;
     }
-
-    /* ── Section helpers ── */
-    .section-rule {
-      border: none;
-      border-top: 1px solid var(--surface-700);
-      margin: 20px 0 16px;
-    }
-    .section-sublabel {
-      font-size: 0.75rem;
-      color: var(--slate-500);
-      margin-bottom: 8px;
-    }
-    .section-sublabel-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-
-    /* ── Form ── */
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
+    .section-rule { border: none; border-top: 1px solid var(--s700); margin: 20px 0 16px; }
+    .sublabel { font-size: 0.75rem; color: var(--sl500); margin-bottom: 8px; }
+    .sublabel-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
     .field:last-child { margin-bottom: 0; }
-
-    label { font-size: 0.75rem; color: var(--slate-400); }
-    label .unit { color: var(--slate-600); }
-
+    label { font-size: 0.75rem; color: var(--sl400); }
+    label .unit { color: var(--sl600); }
     input[type=number] {
-      width: 100%;
-      background: var(--surface-700);
-      border: 1px solid var(--surface-500);
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 0.875rem;
-      font-family: 'DM Sans', sans-serif;
-      color: var(--slate-100);
-      -moz-appearance: textfield;
-      transition: box-shadow 0.15s;
+      width: 100%; background: var(--s700); border: 1px solid var(--s500);
+      border-radius: 8px; padding: 8px 12px; font-size: 0.875rem;
+      font-family: 'DM Sans', sans-serif; color: var(--sl100);
+      -moz-appearance: textfield; transition: box-shadow 0.15s;
     }
     input[type=number]::-webkit-outer-spin-button,
     input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
-    input[type=number]::placeholder { color: var(--surface-500); }
+    input[type=number]::placeholder { color: var(--s500); }
     input[type=number]:focus { outline: none; box-shadow: 0 0 0 2px var(--accent); }
-
-    .hint {
-      font-size: 0.72rem;
-      color: var(--slate-600);
-      line-height: 1.5;
-      margin-top: 8px;
-    }
-
-    /* ── Badge ── */
+    .hint { font-size: 0.72rem; color: var(--sl600); line-height: 1.5; margin-top: 8px; }
     .badge {
-      display: inline-flex;
-      align-items: center;
-      font-size: 0.65rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: 4px;
-      background: var(--accent-muted);
-      color: var(--blue-400);
+      display: inline-flex; align-items: center; font-size: 0.65rem; font-weight: 600;
+      letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px;
+      border-radius: 4px; background: var(--accent-muted); color: var(--blue);
     }
-
-    /* ── Result metrics ── */
-    .results-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 8px;
+    .diagram-block {
+      background: var(--s700); border-radius: 12px; padding: 12px 12px 10px; margin-bottom: 4px;
     }
-    .metric { background: var(--surface-700); border-radius: 12px; padding: 12px; }
-    .metric.full { grid-column: 1 / -1; }
-    .metric-label { font-size: 0.7rem; color: var(--slate-500); margin-bottom: 4px; }
-    .metric-val {
-      font-family: 'DM Mono', monospace;
-      font-size: 1.3rem;
-      font-weight: 500;
-      color: var(--slate-100);
+    .diagram-block-title {
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--sl500); margin-bottom: 6px;
     }
-    .metric-val .mu {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.75rem;
-      font-weight: 400;
-      color: var(--slate-500);
+    .diagram-block svg { display: block; width: 100%; }
+    .diagram-footer {
+      display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px;
     }
-    .metric-note { font-size: 0.72rem; margin-top: 4px; }
-    .note-green { color: var(--green-400); }
-    .note-blue  { color: var(--blue-400); }
-    .note-amber { color: var(--amber-400); }
-
-    /* ── Bias bar ── */
-    .bias-bar-bg {
-      height: 5px;
-      border-radius: 9999px;
-      background: var(--surface-600);
-      overflow: hidden;
-      margin-bottom: 4px;
+    .d-val {
+      font-family: 'DM Mono', monospace; font-size: 1.1rem;
+      font-weight: 500; color: var(--sl100);
     }
-    .bias-bar-fill {
-      height: 100%;
-      border-radius: 9999px;
-      background: var(--accent);
-      transition: width 0.25s ease;
-    }
-    .bias-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.7rem;
-      color: var(--slate-600);
-    }
-
-    /* ── Analysis ── */
+    .d-val .mu { font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 400; color: var(--sl500); }
+    .d-note { font-size: 0.72rem; color: var(--sl500); }
+    .note-green { color: var(--green); }
+    .note-blue  { color: var(--blue);  }
+    .note-amber { color: var(--amber); }
     .analysis-list { list-style: none; margin-top: 4px; }
     .analysis-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      padding: 7px 0;
-      border-bottom: 1px solid var(--surface-700);
-      font-size: 0.78rem;
-      color: var(--slate-400);
-      line-height: 1.5;
+      display: flex; align-items: flex-start; gap: 8px; padding: 7px 0;
+      border-bottom: 1px solid var(--s700); font-size: 0.78rem;
+      color: var(--sl400); line-height: 1.5;
     }
     .analysis-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      margin-top: 5px;
-    }
-    .dot-green { background: var(--green-400); }
-    .dot-blue  { background: var(--blue-400); }
-    .dot-amber { background: var(--amber-400); }
-
-    /* ── 2-col layout on wider screens ── */
+    .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+    .dot-green { background: var(--green); }
+    .dot-blue  { background: var(--blue);  }
+    .dot-amber { background: var(--amber); }
     @media (min-width: 640px) {
       main { padding: 32px 24px; }
-      .two-col {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        align-items: start;
-      }
+      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="icon-wrap" aria-hidden="true">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="8" r="5.5" stroke="white" stroke-width="1.5"/>
-        <circle cx="8" cy="8" r="1.5" fill="white"/>
-        <line x1="8" y1="2" x2="8" y2="4.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <div class="header-text">
-      <h1>RC Crawler CoG Calculator</h1>
-      <p>1/24 scale · mm &amp; grams · 30mm riser</p>
-    </div>
-  </header>
+<header>
+  <div class="icon-wrap" aria-hidden="true">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="5.5" stroke="white" stroke-width="1.5"/>
+      <circle cx="8" cy="8" r="1.5" fill="white"/>
+      <line x1="8" y1="2" x2="8" y2="4.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="header-text">
+    <h1>RC Crawler CoG Calculator</h1>
+    <p>1/24 scale · mm &amp; grams · 30mm riser</p>
+  </div>
+</header>
 
-  <main>
-    <div class="two-col">
+<main>
+  <div class="two-col">
 
-      <!-- INPUTS -->
-      <div class="card">
-        <p class="card-label">Measurements</p>
-
-        <p class="section-sublabel">Crawler</p>
-        <div class="grid-2">
-          <div class="field">
-            <label>Total weight <span class="unit">g</span></label>
-            <input type="number" id="total" placeholder="e.g. 320" oninput="calc()">
-          </div>
-          <div class="field">
-            <label>Tire diameter <span class="unit">mm</span></label>
-            <input type="number" id="tire_d" placeholder="e.g. 54" oninput="calc()">
-          </div>
-        </div>
-
-        <hr class="section-rule">
-
-        <p class="section-sublabel">Longitudinal</p>
+    <!-- INPUTS -->
+    <div class="card">
+      <p class="card-label">Measurements</p>
+      <p class="sublabel">Crawler</p>
+      <div class="grid-2">
         <div class="field">
-          <label>Wheelbase <span class="unit">mm</span></label>
-          <input type="number" id="wb" placeholder="e.g. 110" oninput="calc()">
+          <label>Total weight <span class="unit">g</span></label>
+          <input type="number" id="total" placeholder="e.g. 320" oninput="calc()">
         </div>
-        <div class="grid-2">
-          <div class="field">
-            <label>Front axle weight <span class="unit">g</span></label>
-            <input type="number" id="front_flat" placeholder="e.g. 165" oninput="calc()">
-          </div>
-          <div class="field">
-            <label>Rear axle weight <span class="unit">g</span></label>
-            <input type="number" id="rear_flat" placeholder="auto" oninput="calc()">
-          </div>
-        </div>
-
-        <hr class="section-rule">
-
-        <div class="section-sublabel-row">
-          <span class="section-sublabel" style="margin:0">Altitudinal</span>
-          <span class="badge">30mm riser fixed</span>
-        </div>
-        <div class="field" style="margin-top:8px">
-          <label>Rear axle weight with front raised <span class="unit">g</span></label>
-          <input type="number" id="rear_raised" placeholder="re-weigh rear axle on riser" oninput="calc()">
-        </div>
-        <p class="hint">Place front wheels on the 30mm riser. Weigh the rear axle only. Chock the rear wheels to prevent rolling.</p>
-
-        <hr class="section-rule">
-
-        <p class="section-sublabel">Side</p>
         <div class="field">
-          <label>Track width <span class="unit">mm</span></label>
-          <input type="number" id="track" placeholder="e.g. 80" oninput="calc()">
+          <label>Tire diameter <span class="unit">mm</span></label>
+          <input type="number" id="tire_d" placeholder="e.g. 54" oninput="calc()">
         </div>
-        <div class="grid-2">
-          <div class="field">
-            <label>Left wheels weight <span class="unit">g</span></label>
-            <input type="number" id="left_w" placeholder="e.g. 158" oninput="calc()">
-          </div>
-          <div class="field">
-            <label>Right wheels weight <span class="unit">g</span></label>
-            <input type="number" id="right_w" placeholder="auto" oninput="calc()">
-          </div>
+      </div>
+      <hr class="section-rule">
+      <p class="sublabel">Longitudinal</p>
+      <div class="field">
+        <label>Wheelbase <span class="unit">mm</span></label>
+        <input type="number" id="wb" placeholder="e.g. 110" oninput="calc()">
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Front axle weight <span class="unit">g</span></label>
+          <input type="number" id="front_flat" placeholder="e.g. 165" oninput="calc()">
+        </div>
+        <div class="field">
+          <label>Rear axle weight <span class="unit">g</span></label>
+          <input type="number" id="rear_flat" placeholder="auto" oninput="calc()">
+        </div>
+      </div>
+      <hr class="section-rule">
+      <div class="sublabel-row">
+        <span class="sublabel" style="margin:0">Altitudinal</span>
+        <span class="badge">30mm riser fixed</span>
+      </div>
+      <div class="field" style="margin-top:8px">
+        <label>Rear axle weight with front raised <span class="unit">g</span></label>
+        <input type="number" id="rear_raised" placeholder="re-weigh rear axle on riser" oninput="calc()">
+      </div>
+      <p class="hint">Place front wheels on the 30mm riser. Weigh the rear axle only. Chock the rear wheels to prevent rolling.</p>
+      <hr class="section-rule">
+      <p class="sublabel">Side</p>
+      <div class="field">
+        <label>Track width <span class="unit">mm</span></label>
+        <input type="number" id="track" placeholder="e.g. 80" oninput="calc()">
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Left wheels weight <span class="unit">g</span></label>
+          <input type="number" id="left_w" placeholder="e.g. 158" oninput="calc()">
+        </div>
+        <div class="field">
+          <label>Right wheels weight <span class="unit">g</span></label>
+          <input type="number" id="right_w" placeholder="auto" oninput="calc()">
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="card">
+      <p class="card-label">Center of Gravity</p>
+
+      <!-- ── LONGITUDINAL ── -->
+      <!--
+        SVG coordinate map (794×794 viewBox):
+          Rear wheel:   cx=197  cy=472  r=63
+          Front wheel:  cx=611  cy=472  r=63
+          Wheelbase px: 414  (611-197)
+          Axle line y:  472
+          Ground y:     535  (472+63)
+          Body top y:   256
+          SVG height span (top→ground): 535-256 = 279px
+
+        Fill rect rises from ground (y=535) upward.
+        CoG dot placed on axle line (y=472) at longitudinal x position.
+        Clip path = union of truck body path (excludes wheels so fill
+        stays inside the silhouette only).
+      -->
+      <div class="diagram-block">
+        <p class="diagram-block-title">Longitudinal — side view</p>
+        <svg viewBox="0 0 794 600" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- clip to the truck body silhouette only (the main body path, not wheels) -->
+            <clipPath id="cp-long">
+              <path d="M 330.83 271.98 C 331.72 263.66 339.17 257.42 346.97 255.74 C 383.04 255.67 419.12 255.63 455.20 255.75 C 460.52 258.18 466.20 260.35 470.37 264.64 C 484.84 278.83 499.39 292.95 513.56 307.44 C 521.16 315.18 529.01 322.68 536.97 330.04 C 538.35 331.29 539.93 332.51 541.86 332.67 C 549.93 333.97 558.05 334.95 566.16 335.92 C 609.50 341.84 652.78 348.23 696.14 353.99 C 703.39 355.46 711.55 355.36 717.61 360.20 C 722.13 364.24 724.54 370.18 725.44 376.08 C 727.77 390.60 727.95 405.35 729.58 419.95 C 729.81 423.48 732.38 426.09 735.28 427.78 C 739.20 430.10 741.45 434.57 741.52 439.07 C 741.86 446.93 740.60 454.88 738.05 462.32 C 736.12 467.89 730.73 471.89 724.84 472.12 C 713.21 472.67 701.57 473.11 689.93 473.20 L 537.57 472.27 L 281.96 472.23 L 130.26 471.72 C 114.80 471.28 99.35 470.96 83.91 470.05 C 76.39 469.24 68.71 469.07 61.40 466.91 C 56.84 464.64 54.78 459.57 53.80 454.85 C 52.49 448.01 52.00 440.90 52.93 433.99 C 54.07 428.15 62.92 427.40 62.43 420.94 C 63.22 400.05 63.05 379.14 63.97 358.26 C 63.85 352.72 67.59 347.55 72.87 345.96 C 77.56 345.43 82.28 344.89 87.01 344.79 C 166.42 344.26 245.84 344.62 325.26 344.52 C 326.49 320.31 327.83 296.06 330.83 271.98 Z"/>
+            </clipPath>
+          </defs>
+
+          <!-- fill rises from ground up, clipped to body -->
+          <rect id="long-fill" x="0" y="535" width="794" height="0"
+                fill="#1d3a5f" clip-path="url(#cp-long)" opacity="0.9"/>
+
+          <!-- truck body (white/light stroke on dark bg) -->
+          <path fill="#2a2f3a" stroke="#4a5568" stroke-width="3"
+            d="M 330.83 271.98 C 331.72 263.66 339.17 257.42 346.97 255.74 C 383.04 255.67 419.12 255.63 455.20 255.75 C 460.52 258.18 466.20 260.35 470.37 264.64 C 484.84 278.83 499.39 292.95 513.56 307.44 C 521.16 315.18 529.01 322.68 536.97 330.04 C 538.35 331.29 539.93 332.51 541.86 332.67 C 549.93 333.97 558.05 334.95 566.16 335.92 C 609.50 341.84 652.78 348.23 696.14 353.99 C 703.39 355.46 711.55 355.36 717.61 360.20 C 722.13 364.24 724.54 370.18 725.44 376.08 C 727.77 390.60 727.95 405.35 729.58 419.95 C 729.81 423.48 732.38 426.09 735.28 427.78 C 739.20 430.10 741.45 434.57 741.52 439.07 C 741.86 446.93 740.60 454.88 738.05 462.32 C 736.12 467.89 730.73 471.89 724.84 472.12 C 713.21 472.67 701.57 473.11 689.93 473.20 L 537.57 472.27 L 281.96 472.23 L 130.26 471.72 C 114.80 471.28 99.35 470.96 83.91 470.05 C 76.39 469.24 68.71 469.07 61.40 466.91 C 56.84 464.64 54.78 459.57 53.80 454.85 C 52.49 448.01 52.00 440.90 52.93 433.99 C 54.07 428.15 62.92 427.40 62.43 420.94 C 63.22 400.05 63.05 379.14 63.97 358.26 C 63.85 352.72 67.59 347.55 72.87 345.96 C 77.56 345.43 82.28 344.89 87.01 344.79 C 166.42 344.26 245.84 344.62 325.26 344.52 C 326.49 320.31 327.83 296.06 330.83 271.98 Z"/>
+
+          <!-- cab window detail (inner path) -->
+          <path fill="#16181c" stroke="#4a5568" stroke-width="2"
+            d="M 374.35 282.09 C 372.97 288.62 373.40 295.33 372.49 301.92 C 372.16 314.24 370.67 326.57 371.41 338.90 C 371.51 342.47 374.33 345.62 378.06 345.22 C 415.72 345.67 453.38 345.56 491.03 345.60 C 497.07 345.43 503.18 345.84 509.16 344.78 C 510.84 344.70 511.65 343.09 512.72 342.04 C 511.06 337.82 507.95 334.45 505.05 331.05 C 491.74 316.35 478.36 301.71 464.62 287.40 C 460.49 283.65 457.05 278.85 451.89 276.45 C 444.29 275.45 436.62 275.73 428.98 275.64 C 412.36 275.63 395.73 275.62 379.10 275.64 C 377.25 277.55 375.00 279.39 374.35 282.09 Z"/>
+
+          <!-- ground line -->
+          <line x1="20" y1="545" x2="774" y2="545" stroke="#272b33" stroke-width="2"/>
+
+          <!-- rear wheel -->
+          <circle cx="197" cy="472" r="63" fill="#2a2f3a" stroke="#4a5568" stroke-width="3"/>
+          <circle cx="197" cy="472" r="31" fill="#1e2128" stroke="#4a5568" stroke-width="2"/>
+          <circle cx="197" cy="472" r="10" fill="#272b33"/>
+
+          <!-- front wheel -->
+          <circle cx="611" cy="472" r="63" fill="#2a2f3a" stroke="#4a5568" stroke-width="3"/>
+          <circle cx="611" cy="472" r="31" fill="#1e2128" stroke="#4a5568" stroke-width="2"/>
+          <circle cx="611" cy="472" r="10" fill="#272b33"/>
+
+          <!-- axle dashed line -->
+          <line x1="197" y1="472" x2="611" y2="472" stroke="#272b33" stroke-width="1.5" stroke-dasharray="6,6"/>
+
+          <!-- REAR / FRONT labels -->
+          <text x="197" y="555" text-anchor="middle" font-size="20" fill="#475569" font-family="DM Sans,sans-serif">REAR</text>
+          <text x="611" y="555" text-anchor="middle" font-size="20" fill="#475569" font-family="DM Sans,sans-serif">FRONT</text>
+
+          <!-- CoG vertical line + dot -->
+          <line id="long-cog-vline" x1="404" y1="256" x2="404" y2="545"
+                stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,4" opacity="0"/>
+          <circle id="long-cog-dot" cx="404" cy="472" r="10" fill="#3b82f6" opacity="0"/>
+        </svg>
+        <div class="diagram-footer">
+          <span class="d-val" id="long-val">—</span>
+          <span class="d-note" id="long-note">Enter weights to see CoG</span>
         </div>
       </div>
 
-      <!-- RESULTS -->
-      <div class="card">
-        <p class="card-label">Center of Gravity</p>
+      <hr class="section-rule">
 
-        <p class="section-sublabel">Longitudinal</p>
-        <div class="results-grid">
-          <div class="metric">
-            <p class="metric-label">a — rear → CoG</p>
-            <p class="metric-val" id="r_a">—<span class="mu"> mm</span></p>
-          </div>
-          <div class="metric">
-            <p class="metric-label">b — front → CoG</p>
-            <p class="metric-val" id="r_b">—<span class="mu"> mm</span></p>
-          </div>
+      <!-- ── ALTITUDINAL ── -->
+      <div class="diagram-block">
+        <p class="diagram-block-title">Altitudinal — CoG height</p>
+        <svg viewBox="0 0 794 600" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <clipPath id="cp-alt">
+              <path d="M 330.83 271.98 C 331.72 263.66 339.17 257.42 346.97 255.74 C 383.04 255.67 419.12 255.63 455.20 255.75 C 460.52 258.18 466.20 260.35 470.37 264.64 C 484.84 278.83 499.39 292.95 513.56 307.44 C 521.16 315.18 529.01 322.68 536.97 330.04 C 538.35 331.29 539.93 332.51 541.86 332.67 C 549.93 333.97 558.05 334.95 566.16 335.92 C 609.50 341.84 652.78 348.23 696.14 353.99 C 703.39 355.46 711.55 355.36 717.61 360.20 C 722.13 364.24 724.54 370.18 725.44 376.08 C 727.77 390.60 727.95 405.35 729.58 419.95 C 729.81 423.48 732.38 426.09 735.28 427.78 C 739.20 430.10 741.45 434.57 741.52 439.07 C 741.86 446.93 740.60 454.88 738.05 462.32 C 736.12 467.89 730.73 471.89 724.84 472.12 C 713.21 472.67 701.57 473.11 689.93 473.20 L 537.57 472.27 L 281.96 472.23 L 130.26 471.72 C 114.80 471.28 99.35 470.96 83.91 470.05 C 76.39 469.24 68.71 469.07 61.40 466.91 C 56.84 464.64 54.78 459.57 53.80 454.85 C 52.49 448.01 52.00 440.90 52.93 433.99 C 54.07 428.15 62.92 427.40 62.43 420.94 C 63.22 400.05 63.05 379.14 63.97 358.26 C 63.85 352.72 67.59 347.55 72.87 345.96 C 77.56 345.43 82.28 344.89 87.01 344.79 C 166.42 344.26 245.84 344.62 325.26 344.52 C 326.49 320.31 327.83 296.06 330.83 271.98 Z"/>
+            </clipPath>
+          </defs>
+
+          <rect id="alt-fill" x="0" y="535" width="794" height="0"
+                fill="#1d3a5f" clip-path="url(#cp-alt)" opacity="0.9"/>
+
+          <path fill="#2a2f3a" stroke="#4a5568" stroke-width="3"
+            d="M 330.83 271.98 C 331.72 263.66 339.17 257.42 346.97 255.74 C 383.04 255.67 419.12 255.63 455.20 255.75 C 460.52 258.18 466.20 260.35 470.37 264.64 C 484.84 278.83 499.39 292.95 513.56 307.44 C 521.16 315.18 529.01 322.68 536.97 330.04 C 538.35 331.29 539.93 332.51 541.86 332.67 C 549.93 333.97 558.05 334.95 566.16 335.92 C 609.50 341.84 652.78 348.23 696.14 353.99 C 703.39 355.46 711.55 355.36 717.61 360.20 C 722.13 364.24 724.54 370.18 725.44 376.08 C 727.77 390.60 727.95 405.35 729.58 419.95 C 729.81 423.48 732.38 426.09 735.28 427.78 C 739.20 430.10 741.45 434.57 741.52 439.07 C 741.86 446.93 740.60 454.88 738.05 462.32 C 736.12 467.89 730.73 471.89 724.84 472.12 C 713.21 472.67 701.57 473.11 689.93 473.20 L 537.57 472.27 L 281.96 472.23 L 130.26 471.72 C 114.80 471.28 99.35 470.96 83.91 470.05 C 76.39 469.24 68.71 469.07 61.40 466.91 C 56.84 464.64 54.78 459.57 53.80 454.85 C 52.49 448.01 52.00 440.90 52.93 433.99 C 54.07 428.15 62.92 427.40 62.43 420.94 C 63.22 400.05 63.05 379.14 63.97 358.26 C 63.85 352.72 67.59 347.55 72.87 345.96 C 77.56 345.43 82.28 344.89 87.01 344.79 C 166.42 344.26 245.84 344.62 325.26 344.52 C 326.49 320.31 327.83 296.06 330.83 271.98 Z"/>
+
+          <path fill="#16181c" stroke="#4a5568" stroke-width="2"
+            d="M 374.35 282.09 C 372.97 288.62 373.40 295.33 372.49 301.92 C 372.16 314.24 370.67 326.57 371.41 338.90 C 371.51 342.47 374.33 345.62 378.06 345.22 C 415.72 345.67 453.38 345.56 491.03 345.60 C 497.07 345.43 503.18 345.84 509.16 344.78 C 510.84 344.70 511.65 343.09 512.72 342.04 C 511.06 337.82 507.95 334.45 505.05 331.05 C 491.74 316.35 478.36 301.71 464.62 287.40 C 460.49 283.65 457.05 278.85 451.89 276.45 C 444.29 275.45 436.62 275.73 428.98 275.64 C 412.36 275.63 395.73 275.62 379.10 275.64 C 377.25 277.55 375.00 279.39 374.35 282.09 Z"/>
+
+          <!-- height ruler -->
+          <line x1="28" y1="545" x2="28" y2="256" stroke="#4a5568" stroke-width="1.5"/>
+          <line x1="18" y1="545" x2="38" y2="545" stroke="#4a5568" stroke-width="1.5"/>
+          <line x1="18" y1="256" x2="38" y2="256" stroke="#343a45" stroke-width="1.5"/>
+
+          <line x1="20" y1="545" x2="774" y2="545" stroke="#272b33" stroke-width="2"/>
+
+          <circle cx="197" cy="472" r="63" fill="#2a2f3a" stroke="#4a5568" stroke-width="3"/>
+          <circle cx="197" cy="472" r="31" fill="#1e2128" stroke="#4a5568" stroke-width="2"/>
+          <circle cx="197" cy="472" r="10" fill="#272b33"/>
+
+          <circle cx="611" cy="472" r="63" fill="#2a2f3a" stroke="#4a5568" stroke-width="3"/>
+          <circle cx="611" cy="472" r="31" fill="#1e2128" stroke="#4a5568" stroke-width="2"/>
+          <circle cx="611" cy="472" r="10" fill="#272b33"/>
+
+          <!-- horizontal CoG line -->
+          <line id="alt-cog-hline" x1="28" y1="472" x2="760" y2="472"
+                stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,4" opacity="0"/>
+          <circle id="alt-cog-dot" cx="404" cy="472" r="10" fill="#3b82f6" opacity="0"/>
+        </svg>
+        <div class="diagram-footer">
+          <span class="d-val" id="alt-val">—<span class="mu"> mm</span></span>
+          <span class="d-note" id="alt-note">Enter measurements to calculate</span>
         </div>
-        <div class="bias-bar-bg"><div class="bias-bar-fill" id="long_bar" style="width:50%"></div></div>
-        <div class="bias-labels">
-          <span id="long_rear_pct">— rear</span>
-          <span id="long_front_pct">front —</span>
-        </div>
-
-        <hr class="section-rule">
-
-        <p class="section-sublabel">Altitudinal</p>
-        <div class="results-grid">
-          <div class="metric full">
-            <p class="metric-label">h — CoG height above ground</p>
-            <p class="metric-val" id="r_h">—<span class="mu"> mm</span></p>
-            <p class="metric-note" id="r_h_note"></p>
-          </div>
-        </div>
-
-        <hr class="section-rule">
-
-        <p class="section-sublabel">Side</p>
-        <div class="results-grid">
-          <div class="metric">
-            <p class="metric-label">x — left → CoG</p>
-            <p class="metric-val" id="r_x">—<span class="mu"> mm</span></p>
-          </div>
-          <div class="metric">
-            <p class="metric-label">y — right → CoG</p>
-            <p class="metric-val" id="r_y">—<span class="mu"> mm</span></p>
-          </div>
-        </div>
-        <div class="bias-bar-bg"><div class="bias-bar-fill" id="side_bar" style="width:50%"></div></div>
-        <div class="bias-labels">
-          <span id="side_left_pct">— left</span>
-          <span id="side_right_pct">right —</span>
-        </div>
-
-        <hr class="section-rule">
-
-        <p class="section-sublabel">Analysis</p>
-        <ul class="analysis-list" id="analysis">
-          <li class="analysis-item">
-            <span class="dot dot-blue"></span>
-            <span>Fill in measurements to see analysis.</span>
-          </li>
-        </ul>
       </div>
 
+      <hr class="section-rule">
+
+      <!-- ── SIDE BALANCE ── -->
+      <!--
+        Top-down view. ViewBox 794 x 500.
+        Truck body: x=160 y=40 w=474 h=420 rx=30  (front at TOP, rear at BOTTOM)
+        Left side = left in SVG, right side = right in SVG.
+        Left wheels: front cx=160,cy=110  rear cx=160,cy=390
+        Right wheels: front cx=634,cy=110  rear cx=634,cy=390
+        Wheel shape top-down = rectangle (tire footprint), rx=10
+        Track center-to-center: 634-160 = 474px  → maps to real track width
+        Lateral CoG: cogX interpolates between 160 and 634
+        Fill: rises from LEFT edge rightward to cogX (left-heavy shows more fill)
+        CoG dot sits on the fore-aft centerline of the truck at cogX laterally,
+        and at the longitudinal midpoint (y=225) fore-aft.
+        Horizontal dashed line at cogX across the track width.
+      -->
+      <div class="diagram-block">
+        <p class="diagram-block-title">Side balance — top view</p>
+        <!-- ViewBox 941x1672. Front=top (y~232), Rear=bottom (y~1439).
+             Left wheel col center x~227, Right wheel col center x~714.
+             Body center x~460. Track px: 714-227=487.
+             Fill grows from left body edge (x=248) rightward to cogX.
+             CoG dot at fore-aft center y=836, slides left/right. -->
+        <svg viewBox="0 0 941 1720" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <clipPath id="cp-side">
+              <path d="M 368.21 235.86 C 406.37 232.53 444.72 231.74 483.01 232.34 C 526.84 232.85 570.66 236.34 613.89 243.69 C 630.05 246.59 647.46 251.49 658.25 264.76 C 665.93 273.69 668.88 285.47 670.32 296.90 C 671.60 314.13 671.55 322.77 672.16 333.02 C 672.57 346.31 672.39 359.63 673.10 372.89 C 674.13 428.47 673.73 484.07 673.62 539.65 C 697.31 539.66 709.16 539.78 716.63 558.10 C 708.01 566.46 673.74 566.57 673.41 824.96 C 659.35 851.96 410.14 851.30 248.51 827.08 C 248.08 768.94 248.28 566.56 206.13 556.99 C 204.75 546.36 213.82 539.76 248.29 539.60 C 248.07 445.87 249.18 382.11 250.24 350.04 C 250.85 322.88 251.84 303.88 261.91 269.01 C 275.46 255.40 299.99 245.38 368.21 235.86 Z"/>
+              <path d="M 250.65 873.84 C 263.87 860.57 649.98 860.71 673.53 883.96 C 673.65 1219.70 673.54 1387.58 690.37 1393.81 C 690.21 1407.12 650.98 1439.58 232.36 1398.01 C 237.77 1388.08 248.33 885.00 250.65 873.84 Z"/>
+            </clipPath>
+          </defs>
+
+          <!-- fill grows rightward from left body edge to cogX -->
+          <rect id="side-fill" x="248" y="232" width="0" height="1207"
+                fill="#1d3a5f" clip-path="url(#cp-side)" opacity="0.9"/>
+
+          <!-- body path 1: cab/front -->
+          <path fill="#2a2f3a" stroke="#4a5568" stroke-width="5"
+            d="M 368.21 235.86 C 406.37 232.53 444.72 231.74 483.01 232.34 C 526.84 232.85 570.66 236.34 613.89 243.69 C 630.05 246.59 647.46 251.49 658.25 264.76 C 665.93 273.69 668.88 285.47 670.32 296.90 C 670.97 305.51 671.60 314.13 671.55 322.77 C 671.69 322.68 671.97 322.49 672.11 322.40 C 671.17 325.87 672.04 329.49 672.16 333.02 C 672.57 346.31 672.39 359.63 673.10 372.89 C 674.13 428.47 673.73 484.07 673.62 539.65 C 685.46 539.91 697.31 539.66 709.16 539.78 C 712.58 540.24 715.73 542.59 716.38 546.12 C 716.77 550.09 716.60 554.10 716.63 558.10 C 716.93 562.68 712.58 566.90 708.01 566.46 C 696.59 566.53 685.16 566.38 673.74 566.57 C 673.63 652.70 673.76 738.83 673.41 824.96 C 673.20 839.51 659.35 851.96 644.95 851.40 C 599.52 851.39 554.09 851.46 508.65 851.39 C 504.78 849.04 504.86 843.01 500.18 841.71 C 477.46 841.40 454.73 841.62 432.00 841.53 C 428.02 841.68 423.98 841.27 420.05 841.93 C 414.93 843.04 415.54 851.01 410.14 851.30 C 365.08 851.51 320.02 851.36 274.96 851.39 C 261.71 851.40 249.50 840.34 248.51 827.08 C 248.23 813.69 248.69 800.28 248.10 786.90 C 247.54 782.92 248.00 778.88 247.83 774.88 C 248.28 772.92 248.26 770.91 248.08 768.94 C 248.48 701.50 248.08 634.01 248.28 566.56 C 236.51 566.32 224.73 566.57 212.96 566.43 C 208.33 566.19 205.41 561.31 206.13 556.99 C 206.65 552.19 204.75 546.36 208.37 542.44 C 209.69 540.72 211.87 540.34 213.82 539.76 C 225.31 539.59 236.80 539.96 248.29 539.60 C 248.32 492.74 248.07 445.87 248.61 399.01 C 248.73 393.37 248.50 387.72 249.18 382.11 C 249.61 371.42 249.21 360.70 250.24 350.04 C 250.40 340.99 250.48 331.93 250.85 322.88 C 251.75 316.60 251.30 310.20 251.84 303.88 C 252.88 291.82 255.16 279.33 261.91 269.01 C 265.59 263.76 270.04 258.92 275.46 255.40 C 282.83 250.39 291.41 247.54 299.99 245.38 C 322.46 240.53 345.39 238.36 368.21 235.86 Z"/>
+
+          <!-- inner cabin detail -->
+          <path fill="#16181c" stroke="#4a5568" stroke-width="3"
+            d="M 394.11 510.12 C 380.05 511.81 363.70 514.35 345.08 518.12 C 328.31 521.26 311.76 525.50 295.28 529.90 C 289.27 544.23 296.23 568.56 313.11 628.93 C 319.86 653.60 338.85 650.85 376.92 645.95 C 421.09 641.45 465.65 640.22 509.95 643.41 C 539.61 644.89 598.33 653.82 601.10 644.10 C 608.19 620.15 621.86 573.85 628.94 548.96 C 633.77 532.57 614.44 526.91 575.12 517.90 C 555.25 514.13 533.84 511.15 515.86 509.16 C 498.00 507.08 479.99 506.21 462.00 506.23 C 432.65 506.34 413.30 507.69 394.11 510.12 Z"/>
+
+          <!-- body path 2: bed/rear -->
+          <path fill="#2a2f3a" stroke="#4a5568" stroke-width="5"
+            d="M 250.65 873.84 C 254.62 865.45 263.87 860.57 272.97 860.71 C 398.64 860.71 524.31 860.68 649.98 860.71 C 662.54 860.21 673.78 871.45 673.53 883.96 C 673.65 1051.83 673.47 1219.70 673.54 1387.58 C 677.12 1387.54 680.72 1387.57 684.31 1387.61 C 689.36 1390.91 690.37 1393.81 690.21 1407.12 C 682.54 1429.22 267.09 1439.81 232.36 1398.01 C 233.69 1389.43 237.77 1388.08 248.40 1387.61 C 248.20 1220.07 248.29 1052.53 248.33 885.00 C 248.07 881.10 249.09 877.36 250.65 873.84 Z"/>
+
+          <!-- bed stripes -->
+          <line x1="297" y1="903"  x2="625" y2="903"  stroke="#4a5568" stroke-width="3"/>
+          <line x1="297" y1="984"  x2="625" y2="984"  stroke="#4a5568" stroke-width="3"/>
+          <line x1="297" y1="1064" x2="625" y2="1064" stroke="#4a5568" stroke-width="3"/>
+          <line x1="297" y1="1144" x2="625" y2="1144" stroke="#4a5568" stroke-width="3"/>
+          <line x1="297" y1="1224" x2="625" y2="1224" stroke="#4a5568" stroke-width="3"/>
+          <line x1="297" y1="1304" x2="625" y2="1304" stroke="#4a5568" stroke-width="3"/>
+          <line x1="297" y1="1384" x2="625" y2="1384" stroke="#4a5568" stroke-width="3"/>
+
+          <!-- center reference line -->
+          <line x1="460" y1="232" x2="460" y2="1439" stroke="#272b33" stroke-width="3" stroke-dasharray="12,16"/>
+
+          <!-- L / R labels -->
+          <text x="100" y="870" text-anchor="middle" font-size="70" fill="#475569" font-family="DM Sans,sans-serif">L</text>
+          <text x="840" y="870" text-anchor="middle" font-size="70" fill="#475569" font-family="DM Sans,sans-serif">R</text>
+
+          <!-- FRONT / REAR labels -->
+          <text x="460" y="170"  text-anchor="middle" font-size="60" fill="#343a45" font-family="DM Sans,sans-serif">FRONT</text>
+          <text x="460" y="1680" text-anchor="middle" font-size="60" fill="#343a45" font-family="DM Sans,sans-serif">REAR</text>
+
+          <!-- CoG vertical dashed line (slides left/right) -->
+          <line id="side-cog-vline" x1="460" y1="232" x2="460" y2="1439"
+                stroke="#3b82f6" stroke-width="5" stroke-dasharray="16,10" opacity="0"/>
+          <!-- CoG dot at fore-aft center -->
+          <circle id="side-cog-dot" cx="460" cy="836" r="26" fill="#3b82f6" opacity="0"/>
+        </svg>
+        <div class="diagram-footer">
+          <span class="d-val" id="side-val">—</span>
+          <span class="d-note" id="side-note">Enter weights to see balance</span>
+        </div>
+      </div>
+
+      <hr class="section-rule">
+
+      <p class="sublabel">Analysis</p>
+      <ul class="analysis-list" id="analysis">
+        <li class="analysis-item">
+          <span class="dot dot-blue"></span>
+          <span>Fill in measurements to see analysis.</span>
+        </li>
+      </ul>
     </div>
-  </main>
 
-  <script>
-    const H_FIXED = 30;
+  </div>
+</main>
 
-    function val(id) { return parseFloat(document.getElementById(id).value); }
-    function setHtml(id, html) { document.getElementById(id).innerHTML = html; }
+<script>
+  const H_FIXED = 30;
 
-    function calc() {
-      const total = val('total');
-      const tireD = val('tire_d');
-      const r     = isNaN(tireD) ? NaN : tireD / 2;
-      const wb    = val('wb');
-      const track = val('track');
-      const rearR = val('rear_raised');
+  function val(id) { return parseFloat(document.getElementById(id).value); }
+  function el(id)  { return document.getElementById(id); }
 
-      let frontFlat = val('front_flat');
-      let rearFlat  = val('rear_flat');
-      let leftW     = val('left_w');
-      let rightW    = val('right_w');
+  /*
+    SVG coordinate map (794×600 viewBox, original paths from uploaded SVG):
+      Rear wheel:   cx=197  cy=472  r=63
+      Front wheel:  cx=611  cy=472  r=63
+      Axle y:       472
+      Ground y:     535   (472+63)
+      Body top y:   256   (top of cab path)
+      Wheelbase px: 414   (611-197)
 
-      if (!isNaN(total) && !isNaN(frontFlat) && isNaN(rearFlat))  rearFlat  = total - frontFlat;
-      if (!isNaN(total) && !isNaN(rearFlat)  && isNaN(frontFlat)) frontFlat = total - rearFlat;
-      if (!isNaN(total) && !isNaN(leftW)     && isNaN(rightW))    rightW    = total - leftW;
-      if (!isNaN(total) && !isNaN(rightW)    && isNaN(leftW))     leftW     = total - rightW;
+    Side rear-view:
+      Left wheel cx:  197
+      Right wheel cx: 611
+      Track px:       414
+      Body top y:     200
+  */
+  const GND      = 535;
+  const AXLE_Y   = 472;
+  const TOP_Y    = 256;
+  const REAR_CX  = 197;
+  const FRONT_CX = 611;
+  const WB_PX    = FRONT_CX - REAR_CX;   // 414
 
-      const mu = '<span class="mu"> mm</span>';
-      let analysis = [];
-      let longOk = false;
+  const S_LEFT_CX  = 137;   // left wheel column center x in top-view SVG
+  const S_RIGHT_CX = 657;   // right wheel column center x
+  const S_TRACK_PX = S_RIGHT_CX - S_LEFT_CX; // 520
+  const S_BODY_LEFT = 160;  // left edge of body rect
+  const S_COG_Y    = 250;   // fore-aft midpoint y for CoG dot in top-view
 
-      // Longitudinal
-      if (!isNaN(total) && !isNaN(wb) && !isNaN(frontFlat) && !isNaN(rearFlat) && total > 0 && wb > 0) {
-        const a = wb * (rearFlat  / total);
-        const b = wb * (frontFlat / total);
-        const frontPct = Math.round(frontFlat / total * 100);
-        const rearPct  = 100 - frontPct;
-        setHtml('r_a', a.toFixed(1) + mu);
-        setHtml('r_b', b.toFixed(1) + mu);
-        document.getElementById('long_bar').style.width       = frontPct + '%';
-        document.getElementById('long_rear_pct').textContent  = rearPct  + '% rear';
-        document.getElementById('long_front_pct').textContent = frontPct + '% front';
-        window._a = a;
-        longOk = true;
+  // Map real-world height h (mm) to SVG fill.
+  // tireD*2 = full vehicle height budget → maps to (GND - TOP_Y) px span.
+  function heightToFill(h, tireD) {
+    const maxH    = tireD * 2.0;
+    const frac    = Math.min(Math.max(h / maxH, 0), 1);
+    const svgSpan = GND - TOP_Y;          // 279px
+    const fillPx  = frac * svgSpan;
+    return { y: GND - fillPx, fillPx };
+  }
 
-        if (frontPct >= 48 && frontPct <= 55)
-          analysis.push({ dot: 'dot-green', text: 'Balanced front/rear weight (' + frontPct + '% front).' });
-        else if (frontPct > 55)
-          analysis.push({ dot: 'dot-blue',  text: 'Front-heavy (' + frontPct + '% front) — good for descents, watch for understeer on loose terrain.' });
-        else
-          analysis.push({ dot: 'dot-blue',  text: 'Rear-heavy (' + rearPct + '% rear) — good traction, may push front on loose rock.' });
-      } else {
-        setHtml('r_a', '—' + mu);
-        setHtml('r_b', '—' + mu);
-        document.getElementById('long_rear_pct').textContent  = '— rear';
-        document.getElementById('long_front_pct').textContent = 'front —';
-      }
+  function setFill(id, y, fillPx, color) {
+    const r = el(id);
+    r.setAttribute('y',      y.toFixed(1));
+    r.setAttribute('height', fillPx.toFixed(1));
+    r.setAttribute('fill',   color);
+  }
+  function resetFill(id) {
+    el(id).setAttribute('y', GND);
+    el(id).setAttribute('height', '0');
+  }
+  function showLine(id, x1, y1, x2, y2, color) {
+    const l = el(id);
+    l.setAttribute('x1', x1.toFixed(1)); l.setAttribute('y1', y1.toFixed(1));
+    l.setAttribute('x2', x2.toFixed(1)); l.setAttribute('y2', y2.toFixed(1));
+    l.setAttribute('stroke', color);     l.setAttribute('opacity', '1');
+  }
+  function showDot(id, cx, cy, color) {
+    const d = el(id);
+    d.setAttribute('cx', cx.toFixed(1));
+    d.setAttribute('cy', cy.toFixed(1));
+    d.setAttribute('fill', color);
+    d.setAttribute('opacity', '1');
+  }
+  function hide(id) { el(id).setAttribute('opacity', '0'); }
 
-      // Altitudinal
-      if (longOk && !isNaN(r) && !isNaN(rearFlat) && !isNaN(rearR) && wb > H_FIXED) {
-        const theta = Math.asin(H_FIXED / wb);
-        const cot   = Math.cos(theta) / Math.sin(theta);
-        const h     = ((rearR - rearFlat) / total) * wb * cot + r;
-        setHtml('r_h', h.toFixed(1) + mu);
-        const ratio  = h / r;
-        const noteEl = document.getElementById('r_h_note');
-        if (ratio < 1.5) {
-          noteEl.textContent = 'Low CoG — excellent stability';
-          noteEl.className   = 'metric-note note-green';
-          analysis.push({ dot: 'dot-green', text: 'Low CoG height (' + h.toFixed(1) + 'mm) — excellent side-hill stability.' });
-        } else if (ratio < 2.2) {
-          noteEl.textContent = 'Moderate CoG — typical build';
-          noteEl.className   = 'metric-note note-blue';
-          analysis.push({ dot: 'dot-blue',  text: 'Moderate CoG height (' + h.toFixed(1) + 'mm) — watch steep traverses.' });
-        } else {
-          noteEl.textContent = 'High CoG — tipping risk on steep side hills';
-          noteEl.className   = 'metric-note note-amber';
-          analysis.push({ dot: 'dot-amber', text: 'High CoG (' + h.toFixed(1) + 'mm) — consider lowering battery pack or adding low ballast.' });
-        }
-      } else {
-        setHtml('r_h', '—' + mu);
-        const noteEl = document.getElementById('r_h_note');
-        noteEl.textContent = '';
-        noteEl.className   = 'metric-note';
-      }
+  function calc() {
+    const total = val('total');
+    const tireD = val('tire_d');
+    const r     = isNaN(tireD) ? NaN : tireD / 2;
+    const wb    = val('wb');
+    const track = val('track');
+    const rearR = val('rear_raised');
 
-      // Side
-      if (!isNaN(total) && !isNaN(track) && !isNaN(leftW) && !isNaN(rightW) && total > 0 && track > 0) {
-        const x = track * (rightW / total);
-        const y = track * (leftW  / total);
-        const leftPct  = Math.round(leftW  / total * 100);
-        const rightPct = 100 - leftPct;
-        setHtml('r_x', x.toFixed(1) + mu);
-        setHtml('r_y', y.toFixed(1) + mu);
-        document.getElementById('side_bar').style.width       = leftPct  + '%';
-        document.getElementById('side_left_pct').textContent  = leftPct  + '% left';
-        document.getElementById('side_right_pct').textContent = rightPct + '% right';
-        const diff = Math.abs(leftPct - 50);
-        if (diff < 3)
-          analysis.push({ dot: 'dot-green', text: 'Side balance is excellent (' + leftPct + '% left / ' + rightPct + '% right).' });
-        else
-          analysis.push({ dot: 'dot-amber', text: 'Side imbalance of ' + diff + '% — consider shifting battery or servo laterally.' });
-      } else {
-        setHtml('r_x', '—' + mu);
-        setHtml('r_y', '—' + mu);
-        document.getElementById('side_left_pct').textContent  = '— left';
-        document.getElementById('side_right_pct').textContent = 'right —';
-      }
+    let frontFlat = val('front_flat');
+    let rearFlat  = val('rear_flat');
+    let leftW     = val('left_w');
+    let rightW    = val('right_w');
 
-      const ul = document.getElementById('analysis');
-      ul.innerHTML = analysis.length
-        ? analysis.map(a => `<li class="analysis-item"><span class="dot ${a.dot}"></span><span>${a.text}</span></li>`).join('')
-        : '<li class="analysis-item"><span class="dot dot-blue"></span><span>Fill in measurements to see analysis.</span></li>';
+    if (!isNaN(total) && !isNaN(frontFlat) && isNaN(rearFlat))  rearFlat  = total - frontFlat;
+    if (!isNaN(total) && !isNaN(rearFlat)  && isNaN(frontFlat)) frontFlat = total - rearFlat;
+    if (!isNaN(total) && !isNaN(leftW)     && isNaN(rightW))    rightW    = total - leftW;
+    if (!isNaN(total) && !isNaN(rightW)    && isNaN(leftW))     leftW     = total - rightW;
+
+    let analysis = [];
+    let longOk   = false;
+    let h_result = NaN;
+
+    // ── LONGITUDINAL ─────────────────────────────────────────
+    if (!isNaN(total) && !isNaN(wb) && !isNaN(frontFlat) && !isNaN(rearFlat) && total > 0 && wb > 0) {
+      // a = distance from REAR axle to CoG
+      // formula: a = L * (frontAxleWeight / totalWeight)
+      // high rear bias → small a → CoG dot near rear wheel (left side of SVG)
+      const a        = wb * (frontFlat / total);
+      const frontPct = Math.round(frontFlat / total * 100);
+      const rearPct  = 100 - frontPct;
+
+      // CoG x on SVG: rear axle (left, cx=197) → front axle (right, cx=611)
+      const cogX = REAR_CX + (a / wb) * WB_PX;
+
+      // Fill rises from ground up, height represents REAR weight bias
+      // Heavy rear = tall fill; heavy front = short fill
+      const fillFrac = rearFlat / total;
+      const fillPx   = fillFrac * (GND - TOP_Y);
+      setFill('long-fill', GND - fillPx, fillPx, '#1d3a5f');
+
+      showLine('long-cog-vline', cogX, TOP_Y, cogX, GND, '#3b82f6');
+      showDot ('long-cog-dot',   cogX, AXLE_Y, '#3b82f6');
+
+      el('long-val').innerHTML    = a.toFixed(1) + '<span class="mu"> mm from rear axle</span>';
+      el('long-note').textContent = rearPct + '% rear / ' + frontPct + '% front';
+      el('long-note').className   = 'd-note';
+
+      window._a = a; window._wb = wb; longOk = true;
+
+      if (frontPct >= 48 && frontPct <= 55)
+        analysis.push({ dot: 'dot-green', text: 'Balanced front/rear weight (' + frontPct + '% front).' });
+      else if (frontPct > 55)
+        analysis.push({ dot: 'dot-blue',  text: 'Front-heavy (' + frontPct + '% front) — good for descents, watch for understeer.' });
+      else
+        analysis.push({ dot: 'dot-blue',  text: 'Rear-heavy (' + rearPct + '% rear) — strong traction, may push front on loose rock.' });
+
+    } else {
+      resetFill('long-fill');
+      hide('long-cog-dot'); hide('long-cog-vline');
+      el('long-val').innerHTML    = '—';
+      el('long-note').textContent = 'Enter weights to see CoG';
+      el('long-note').className   = 'd-note';
     }
-  </script>
+
+    // ── ALTITUDINAL ───────────────────────────────────────────
+    if (longOk && !isNaN(r) && !isNaN(rearFlat) && !isNaN(rearR) && wb > H_FIXED) {
+      const theta = Math.asin(H_FIXED / wb);
+      const cot   = Math.cos(theta) / Math.sin(theta);
+      const h     = ((rearR - rearFlat) / total) * wb * cot + r;
+      h_result    = h;
+
+      if (!isNaN(tireD)) {
+        const { y, fillPx } = heightToFill(h, tireD);
+        const ratio = h / r;
+        let fillColor, dotColor, noteClass, noteText;
+
+        if (ratio < 1.5) {
+          fillColor = '#14291a'; dotColor = '#4ade80';
+          noteClass = 'd-note note-green'; noteText = 'Low CoG — excellent stability';
+          analysis.push({ dot: 'dot-green', text: 'Low CoG (' + h.toFixed(1) + 'mm) — excellent side-hill stability.' });
+        } else if (ratio < 2.2) {
+          fillColor = '#1d3a5f'; dotColor = '#60a5fa';
+          noteClass = 'd-note note-blue';  noteText = 'Moderate CoG — typical build';
+          analysis.push({ dot: 'dot-blue',  text: 'Moderate CoG (' + h.toFixed(1) + 'mm) — watch steep traverses.' });
+        } else {
+          fillColor = '#2e200a'; dotColor = '#fbbf24';
+          noteClass = 'd-note note-amber'; noteText = 'High CoG — tipping risk on steep side hills';
+          analysis.push({ dot: 'dot-amber', text: 'High CoG (' + h.toFixed(1) + 'mm) — consider lowering battery or adding low ballast.' });
+        }
+
+        setFill('alt-fill', y, fillPx, fillColor);
+        showLine('alt-cog-hline', 28, y, 760, y, dotColor);
+        showDot ('alt-cog-dot', 404, y, dotColor);
+
+        el('alt-val').innerHTML    = h.toFixed(1) + '<span class="mu"> mm</span>';
+        el('alt-note').textContent = noteText;
+        el('alt-note').className   = noteClass;
+      }
+    } else {
+      resetFill('alt-fill');
+      hide('alt-cog-dot'); hide('alt-cog-hline');
+      el('alt-val').innerHTML    = '—<span class="mu"> mm</span>';
+      el('alt-note').textContent = 'Enter measurements to calculate';
+      el('alt-note').className   = 'd-note';
+    }
+
+    // ── SIDE BALANCE ──────────────────────────────────────────
+    if (!isNaN(total) && !isNaN(track) && !isNaN(leftW) && !isNaN(rightW) && total > 0 && track > 0) {
+      const x        = track * (leftW / total);   // dist from left wheel to CoG
+      const leftPct  = Math.round(leftW  / total * 100);
+      const rightPct = 100 - leftPct;
+
+      // CoG x in SVG: interpolate between left and right wheel center columns
+      const cogX = S_LEFT_CX + (x / track) * S_TRACK_PX;
+
+      // Fill grows horizontally from body left edge to cogX (left-heavy = wider fill)
+      const fillW = Math.max(0, cogX - S_BODY_LEFT);
+
+      const diff = Math.abs(leftPct - 50);
+      let fillColor, dotColor, noteClass, noteText;
+      if (diff < 3) {
+        fillColor = '#14291a'; dotColor = '#4ade80';
+        noteClass = 'd-note note-green';
+        noteText  = leftPct + '% left / ' + rightPct + '% right — balanced';
+        analysis.push({ dot: 'dot-green', text: 'Side balance is excellent (' + leftPct + '% left / ' + rightPct + '% right).' });
+      } else {
+        fillColor = '#2e200a'; dotColor = '#fbbf24';
+        noteClass = 'd-note note-amber';
+        noteText  = leftPct + '% left / ' + rightPct + '% right — ' + diff + '% off center';
+        analysis.push({ dot: 'dot-amber', text: 'Side imbalance of ' + diff + '% — consider shifting battery or servo laterally.' });
+      }
+
+      // Horizontal fill from left edge of body to cogX
+      const sf = el('side-fill');
+      sf.setAttribute('x',     S_BODY_LEFT);
+      sf.setAttribute('width', fillW.toFixed(1));
+      sf.setAttribute('fill',  fillColor);
+
+      // CoG horizontal line spans left→right wheel columns at CoG y
+      showLine('side-cog-hline', S_LEFT_CX, S_COG_Y, S_RIGHT_CX, S_COG_Y, dotColor);
+      showDot ('side-cog-dot', cogX, S_COG_Y, dotColor);
+
+      el('side-val').innerHTML    = x.toFixed(1) + '<span class="mu"> mm from left axle center</span>';
+      el('side-note').textContent = noteText;
+      el('side-note').className   = noteClass;
+
+    } else {
+      el('side-fill').setAttribute('width', '0');
+      hide('side-cog-dot'); hide('side-cog-hline');
+      el('side-val').innerHTML    = '—';
+      el('side-note').textContent = 'Enter weights to see balance';
+      el('side-note').className   = 'd-note';
+    }
+
+    // ── ANALYSIS ─────────────────────────────────────────────
+    const ul = el('analysis');
+    ul.innerHTML = analysis.length
+      ? analysis.map(a => `<li class="analysis-item"><span class="dot ${a.dot}"></span><span>${a.text}</span></li>`).join('')
+      : '<li class="analysis-item"><span class="dot dot-blue"></span><span>Fill in measurements to see analysis.</span></li>';
+  }
+</script>
 </body>
 </html>
