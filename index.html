@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RC Crawler CoG Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --surface-900: #0e0f11;
+      --surface-800: #16181c;
+      --surface-700: #1e2128;
+      --surface-600: #272b33;
+      --surface-500: #343a45;
+      --accent:      #3b82f6;
+      --accent-muted:#1d3a5f;
+      --slate-100:   #f1f5f9;
+      --slate-400:   #94a3b8;
+      --slate-500:   #64748b;
+      --slate-600:   #475569;
+      --green-400:   #4ade80;
+      --blue-400:    #60a5fa;
+      --amber-400:   #fbbf24;
+    }
+
+    html, body {
+      background: var(--surface-900);
+      color: var(--slate-100);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      border-bottom: 1px solid var(--surface-600);
+    }
+    .icon-wrap {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .header-text h1 { font-size: 0.875rem; font-weight: 600; line-height: 1.2; }
+    .header-text p  { font-size: 0.75rem; color: var(--slate-500); line-height: 1.2; }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 48rem;
+      margin: 0 auto;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface-800);
+      border: 1px solid var(--surface-600);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    .card-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--slate-500);
+      margin-bottom: 16px;
+    }
+
+    /* ── Section helpers ── */
+    .section-rule {
+      border: none;
+      border-top: 1px solid var(--surface-700);
+      margin: 20px 0 16px;
+    }
+    .section-sublabel {
+      font-size: 0.75rem;
+      color: var(--slate-500);
+      margin-bottom: 8px;
+    }
+    .section-sublabel-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    /* ── Form ── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+    .field:last-child { margin-bottom: 0; }
+
+    label { font-size: 0.75rem; color: var(--slate-400); }
+    label .unit { color: var(--slate-600); }
+
+    input[type=number] {
+      width: 100%;
+      background: var(--surface-700);
+      border: 1px solid var(--surface-500);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.875rem;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--slate-100);
+      -moz-appearance: textfield;
+      transition: box-shadow 0.15s;
+    }
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+    input[type=number]::placeholder { color: var(--surface-500); }
+    input[type=number]:focus { outline: none; box-shadow: 0 0 0 2px var(--accent); }
+
+    .hint {
+      font-size: 0.72rem;
+      color: var(--slate-600);
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--accent-muted);
+      color: var(--blue-400);
+    }
+
+    /* ── Result metrics ── */
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .metric { background: var(--surface-700); border-radius: 12px; padding: 12px; }
+    .metric.full { grid-column: 1 / -1; }
+    .metric-label { font-size: 0.7rem; color: var(--slate-500); margin-bottom: 4px; }
+    .metric-val {
+      font-family: 'DM Mono', monospace;
+      font-size: 1.3rem;
+      font-weight: 500;
+      color: var(--slate-100);
+    }
+    .metric-val .mu {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--slate-500);
+    }
+    .metric-note { font-size: 0.72rem; margin-top: 4px; }
+    .note-green { color: var(--green-400); }
+    .note-blue  { color: var(--blue-400); }
+    .note-amber { color: var(--amber-400); }
+
+    /* ── Bias bar ── */
+    .bias-bar-bg {
+      height: 5px;
+      border-radius: 9999px;
+      background: var(--surface-600);
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+    .bias-bar-fill {
+      height: 100%;
+      border-radius: 9999px;
+      background: var(--accent);
+      transition: width 0.25s ease;
+    }
+    .bias-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--slate-600);
+    }
+
+    /* ── Analysis ── */
+    .analysis-list { list-style: none; margin-top: 4px; }
+    .analysis-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--surface-700);
+      font-size: 0.78rem;
+      color: var(--slate-400);
+      line-height: 1.5;
+    }
+    .analysis-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+    .dot-green { background: var(--green-400); }
+    .dot-blue  { background: var(--blue-400); }
+    .dot-amber { background: var(--amber-400); }
+
+    /* ── 2-col layout on wider screens ── */
+    @media (min-width: 640px) {
+      main { padding: 32px 24px; }
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="icon-wrap" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="5.5" stroke="white" stroke-width="1.5"/>
+        <circle cx="8" cy="8" r="1.5" fill="white"/>
+        <line x1="8" y1="2" x2="8" y2="4.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>RC Crawler CoG Calculator</h1>
+      <p>1/24 scale · mm &amp; grams · 30mm riser</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="two-col">
+
+      <!-- INPUTS -->
+      <div class="card">
+        <p class="card-label">Measurements</p>
+
+        <p class="section-sublabel">Crawler</p>
+        <div class="grid-2">
+          <div class="field">
+            <label>Total weight <span class="unit">g</span></label>
+            <input type="number" id="total" placeholder="e.g. 320" oninput="calc()">
+          </div>
+          <div class="field">
+            <label>Tire diameter <span class="unit">mm</span></label>
+            <input type="number" id="tire_d" placeholder="e.g. 54" oninput="calc()">
+          </div>
+        </div>
+
+        <hr class="section-rule">
+
+        <p class="section-sublabel">Longitudinal</p>
+        <div class="field">
+          <label>Wheelbase <span class="unit">mm</span></label>
+          <input type="number" id="wb" placeholder="e.g. 110" oninput="calc()">
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label>Front axle weight <span class="unit">g</span></label>
+            <input type="number" id="front_flat" placeholder="e.g. 165" oninput="calc()">
+          </div>
+          <div class="field">
+            <label>Rear axle weight <span class="unit">g</span></label>
+            <input type="number" id="rear_flat" placeholder="auto" oninput="calc()">
+          </div>
+        </div>
+
+        <hr class="section-rule">
+
+        <div class="section-sublabel-row">
+          <span class="section-sublabel" style="margin:0">Altitudinal</span>
+          <span class="badge">30mm riser fixed</span>
+        </div>
+        <div class="field" style="margin-top:8px">
+          <label>Rear axle weight with front raised <span class="unit">g</span></label>
+          <input type="number" id="rear_raised" placeholder="re-weigh rear axle on riser" oninput="calc()">
+        </div>
+        <p class="hint">Place front wheels on the 30mm riser. Weigh the rear axle only. Chock the rear wheels to prevent rolling.</p>
+
+        <hr class="section-rule">
+
+        <p class="section-sublabel">Side</p>
+        <div class="field">
+          <label>Track width <span class="unit">mm</span></label>
+          <input type="number" id="track" placeholder="e.g. 80" oninput="calc()">
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label>Left wheels weight <span class="unit">g</span></label>
+            <input type="number" id="left_w" placeholder="e.g. 158" oninput="calc()">
+          </div>
+          <div class="field">
+            <label>Right wheels weight <span class="unit">g</span></label>
+            <input type="number" id="right_w" placeholder="auto" oninput="calc()">
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="card">
+        <p class="card-label">Center of Gravity</p>
+
+        <p class="section-sublabel">Longitudinal</p>
+        <div class="results-grid">
+          <div class="metric">
+            <p class="metric-label">a — rear → CoG</p>
+            <p class="metric-val" id="r_a">—<span class="mu"> mm</span></p>
+          </div>
+          <div class="metric">
+            <p class="metric-label">b — front → CoG</p>
+            <p class="metric-val" id="r_b">—<span class="mu"> mm</span></p>
+          </div>
+        </div>
+        <div class="bias-bar-bg"><div class="bias-bar-fill" id="long_bar" style="width:50%"></div></div>
+        <div class="bias-labels">
+          <span id="long_rear_pct">— rear</span>
+          <span id="long_front_pct">front —</span>
+        </div>
+
+        <hr class="section-rule">
+
+        <p class="section-sublabel">Altitudinal</p>
+        <div class="results-grid">
+          <div class="metric full">
+            <p class="metric-label">h — CoG height above ground</p>
+            <p class="metric-val" id="r_h">—<span class="mu"> mm</span></p>
+            <p class="metric-note" id="r_h_note"></p>
+          </div>
+        </div>
+
+        <hr class="section-rule">
+
+        <p class="section-sublabel">Side</p>
+        <div class="results-grid">
+          <div class="metric">
+            <p class="metric-label">x — left → CoG</p>
+            <p class="metric-val" id="r_x">—<span class="mu"> mm</span></p>
+          </div>
+          <div class="metric">
+            <p class="metric-label">y — right → CoG</p>
+            <p class="metric-val" id="r_y">—<span class="mu"> mm</span></p>
+          </div>
+        </div>
+        <div class="bias-bar-bg"><div class="bias-bar-fill" id="side_bar" style="width:50%"></div></div>
+        <div class="bias-labels">
+          <span id="side_left_pct">— left</span>
+          <span id="side_right_pct">right —</span>
+        </div>
+
+        <hr class="section-rule">
+
+        <p class="section-sublabel">Analysis</p>
+        <ul class="analysis-list" id="analysis">
+          <li class="analysis-item">
+            <span class="dot dot-blue"></span>
+            <span>Fill in measurements to see analysis.</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const H_FIXED = 30;
+
+    function val(id) { return parseFloat(document.getElementById(id).value); }
+    function setHtml(id, html) { document.getElementById(id).innerHTML = html; }
+
+    function calc() {
+      const total = val('total');
+      const tireD = val('tire_d');
+      const r     = isNaN(tireD) ? NaN : tireD / 2;
+      const wb    = val('wb');
+      const track = val('track');
+      const rearR = val('rear_raised');
+
+      let frontFlat = val('front_flat');
+      let rearFlat  = val('rear_flat');
+      let leftW     = val('left_w');
+      let rightW    = val('right_w');
+
+      if (!isNaN(total) && !isNaN(frontFlat) && isNaN(rearFlat))  rearFlat  = total - frontFlat;
+      if (!isNaN(total) && !isNaN(rearFlat)  && isNaN(frontFlat)) frontFlat = total - rearFlat;
+      if (!isNaN(total) && !isNaN(leftW)     && isNaN(rightW))    rightW    = total - leftW;
+      if (!isNaN(total) && !isNaN(rightW)    && isNaN(leftW))     leftW     = total - rightW;
+
+      const mu = '<span class="mu"> mm</span>';
+      let analysis = [];
+      let longOk = false;
+
+      // Longitudinal
+      if (!isNaN(total) && !isNaN(wb) && !isNaN(frontFlat) && !isNaN(rearFlat) && total > 0 && wb > 0) {
+        const a = wb * (rearFlat  / total);
+        const b = wb * (frontFlat / total);
+        const frontPct = Math.round(frontFlat / total * 100);
+        const rearPct  = 100 - frontPct;
+        setHtml('r_a', a.toFixed(1) + mu);
+        setHtml('r_b', b.toFixed(1) + mu);
+        document.getElementById('long_bar').style.width       = frontPct + '%';
+        document.getElementById('long_rear_pct').textContent  = rearPct  + '% rear';
+        document.getElementById('long_front_pct').textContent = frontPct + '% front';
+        window._a = a;
+        longOk = true;
+
+        if (frontPct >= 48 && frontPct <= 55)
+          analysis.push({ dot: 'dot-green', text: 'Balanced front/rear weight (' + frontPct + '% front).' });
+        else if (frontPct > 55)
+          analysis.push({ dot: 'dot-blue',  text: 'Front-heavy (' + frontPct + '% front) — good for descents, watch for understeer on loose terrain.' });
+        else
+          analysis.push({ dot: 'dot-blue',  text: 'Rear-heavy (' + rearPct + '% rear) — good traction, may push front on loose rock.' });
+      } else {
+        setHtml('r_a', '—' + mu);
+        setHtml('r_b', '—' + mu);
+        document.getElementById('long_rear_pct').textContent  = '— rear';
+        document.getElementById('long_front_pct').textContent = 'front —';
+      }
+
+      // Altitudinal
+      if (longOk && !isNaN(r) && !isNaN(rearFlat) && !isNaN(rearR) && wb > H_FIXED) {
+        const theta = Math.asin(H_FIXED / wb);
+        const cot   = Math.cos(theta) / Math.sin(theta);
+        const h     = ((rearR - rearFlat) / total) * wb * cot + r;
+        setHtml('r_h', h.toFixed(1) + mu);
+        const ratio  = h / r;
+        const noteEl = document.getElementById('r_h_note');
+        if (ratio < 1.5) {
+          noteEl.textContent = 'Low CoG — excellent stability';
+          noteEl.className   = 'metric-note note-green';
+          analysis.push({ dot: 'dot-green', text: 'Low CoG height (' + h.toFixed(1) + 'mm) — excellent side-hill stability.' });
+        } else if (ratio < 2.2) {
+          noteEl.textContent = 'Moderate CoG — typical build';
+          noteEl.className   = 'metric-note note-blue';
+          analysis.push({ dot: 'dot-blue',  text: 'Moderate CoG height (' + h.toFixed(1) + 'mm) — watch steep traverses.' });
+        } else {
+          noteEl.textContent = 'High CoG — tipping risk on steep side hills';
+          noteEl.className   = 'metric-note note-amber';
+          analysis.push({ dot: 'dot-amber', text: 'High CoG (' + h.toFixed(1) + 'mm) — consider lowering battery pack or adding low ballast.' });
+        }
+      } else {
+        setHtml('r_h', '—' + mu);
+        const noteEl = document.getElementById('r_h_note');
+        noteEl.textContent = '';
+        noteEl.className   = 'metric-note';
+      }
+
+      // Side
+      if (!isNaN(total) && !isNaN(track) && !isNaN(leftW) && !isNaN(rightW) && total > 0 && track > 0) {
+        const x = track * (rightW / total);
+        const y = track * (leftW  / total);
+        const leftPct  = Math.round(leftW  / total * 100);
+        const rightPct = 100 - leftPct;
+        setHtml('r_x', x.toFixed(1) + mu);
+        setHtml('r_y', y.toFixed(1) + mu);
+        document.getElementById('side_bar').style.width       = leftPct  + '%';
+        document.getElementById('side_left_pct').textContent  = leftPct  + '% left';
+        document.getElementById('side_right_pct').textContent = rightPct + '% right';
+        const diff = Math.abs(leftPct - 50);
+        if (diff < 3)
+          analysis.push({ dot: 'dot-green', text: 'Side balance is excellent (' + leftPct + '% left / ' + rightPct + '% right).' });
+        else
+          analysis.push({ dot: 'dot-amber', text: 'Side imbalance of ' + diff + '% — consider shifting battery or servo laterally.' });
+      } else {
+        setHtml('r_x', '—' + mu);
+        setHtml('r_y', '—' + mu);
+        document.getElementById('side_left_pct').textContent  = '— left';
+        document.getElementById('side_right_pct').textContent = 'right —';
+      }
+
+      const ul = document.getElementById('analysis');
+      ul.innerHTML = analysis.length
+        ? analysis.map(a => `<li class="analysis-item"><span class="dot ${a.dot}"></span><span>${a.text}</span></li>`).join('')
+        : '<li class="analysis-item"><span class="dot dot-blue"></span><span>Fill in measurements to see analysis.</span></li>';
+    }
+  </script>
+</body>
+</html>
